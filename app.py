@@ -5,7 +5,7 @@ from docx import Document
 
 
 
-# --- 1. KONFIGURASI HALAMAN ---
+# 1. KONFIGURASI HALAMAN 
 st.set_page_config(page_title="Tutor Virtual SI - UT", page_icon="🎓")
 
 # # # --- JUDUL ---
@@ -13,7 +13,7 @@ st.title("🎓 Tutor Virtual Mahasiswa UT")
 st.caption("Asisten Belajar Mandiri Mahasiswa Program Studi Sistem Informasi")
 
 
-# --- 3. FUNGSI LOAD DATA ---
+# 3. FUNGSI LOAD DATA 
 @st.cache_data
 def load_docx_text(file_path):
     try:
@@ -36,7 +36,7 @@ def get_relevant_context(query, text_list, limit=40):
             
     return "\n".join(relevant_paragraphs[:limit])
 
-# --- 4. MAPPING FILE (Tanpa folder 'data/' jika file sejajar dengan app.py) ---
+# 4. MAPPING FILE (Tanpa folder 'data/' jika file sejajar dengan app.py) ---
 FILES = {
     "Algoritma & Pemrograman": "data/Algoritma Dan Pemrograman_LENGKAP_CLEANED.docx",
     "Basis Data": "data/Basis Data_LENGKAP_CLEANED.docx",
@@ -44,7 +44,7 @@ FILES = {
     "Sistem Informasi Manajemen": "data/Sistem Informasi Manajemen (Pengantar SI)_LENGKAP_CLEANED.docx"
 }
 
-# --- 5. SIDEBAR ---
+#  5. SIDEBAR 
 with st.sidebar:
     st.header("⚙️ Konfigurasi")
     openai_api_key = st.text_input("OpenAI API Key", type="password")
@@ -74,7 +74,7 @@ with st.sidebar:
     st.divider()
     st.info("Dibuat oleh Kelompok [Nomor] - Capstone Project 2026")
 
-# --- 6. CHAT INTERFACE ---
+# 6. CHAT INTERFACE
 if "messages" not in st.session_state:
     st.session_state["messages"] = [{"role": "assistant", "content": "Halo! Silakan pilih mata kuliah di sidebar kiri, lalu tanyakan materinya."}]
 
@@ -82,7 +82,7 @@ if "messages" not in st.session_state:
 for msg in st.session_state.messages:
     st.chat_message(msg["role"]).write(msg["content"])
 
-# --- 7. PROSES INPUT CHAT ---
+# 7. PROSES INPUT CHAT
 if prompt := st.chat_input("Type Here...!"):
     if not openai_api_key:
         st.info("⚠️ Masukkan API Key dulu di sidebar ya!")
@@ -95,7 +95,7 @@ if prompt := st.chat_input("Type Here...!"):
     # Logika Integrasi Data
     context_text = get_relevant_context(prompt, course_content)
     
-    # --- SYSTEM PROMPT (VERSI OPREK DIKIT) ---
+    # SYSTEM PROMPT
     system_prompt = f"""
     Kamu adalah Tutor Virtual ahli Sistem Informasi untuk mata kuliah {selected_subject}.
     
@@ -123,7 +123,7 @@ if prompt := st.chat_input("Type Here...!"):
         
         with st.spinner("Sedang membaca modul & menyusun jawaban..."):
             response = client.chat.completions.create(
-                model="gpt-4o-mini", # Pastikan model ini tersedia di akunmu (atau gpt-3.5-turbo)
+                model="gpt-4o-mini", # Pastikan model ini tersedia di akun (atau gpt-3.5-turbo)
                 messages=final_messages
             )
             msg = response.choices[0].message.content
