@@ -52,8 +52,19 @@ with st.sidebar:
     
     st.divider()
     st.header("📚 Pilih Materi Kuliah")
+    
+    # Simpan state subject sebelumnya untuk ngecek apakah user ganti matkul
+    if "current_subject" not in st.session_state:
+        st.session_state.current_subject = list(FILES.keys())[0]
+
     selected_subject = st.selectbox("Mau belajar apa hari ini?", list(FILES.keys()))
     st.markdown("""*Catatan: Bot tidak akan menjawab pertanyaan di luar materi kuliah.*""")
+    
+    # LOGIKA RESET OTOMATIS: if ganti matkul, bersihkan chat!
+    if selected_subject != st.session_state.current_subject:
+        st.session_state.current_subject = selected_subject
+        st.session_state.messages = [{"role": "assistant", "content": f"Mata kuliah diubah ke {selected_subject}. Silakan bertanya!"}]
+        st.rerun()
     
     
     # Load File
