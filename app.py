@@ -2,6 +2,7 @@ import streamlit as st
 from openai import OpenAI
 import os
 from docx import Document
+import re
 
 
 
@@ -13,28 +14,56 @@ st.title("🎓 Tutor Virtual Mahasiswa UT")
 st.caption("Asisten Belajar Mandiri Mahasiswa Program Studi Sistem Informasi")
 
 
-# 3. FUNGSI LOAD DATA 
+# 2. FUNGSI LOAD DATA 
 @st.cache_data
 def load_docx_text(file_path):
     try:
         doc = Document(file_path)
         full_text = []
+        
         for para in doc.paragraphs:
-            if len(para.text.strip()) > 0:
-                full_text.append(para.text)
+            text = para.text.strip()
+            if text:
+                full_text.append(text)
+                
         return full_text
+    
     except Exception as e:
+        # Menampilkan error di layar web pakai Streamlit
+        st.error(f"Gagal memuat modul: {e}") 
         return []
 
-def get_relevant_context(query, text_list, limit=40):
-    query_words = query.lower().split()
-    relevant_paragraphs = []
+# 3. RAG - Retrieval (ambil konteks dari dokumen)
+def get_relevant_context(query, text_list, limit=5):
+    # a.PREPROCESSING QUERY (Filter kata receh)
+    query_words = [word for word in query.lower().split() if len(word) > 2]
     
+    # b. Safety Net: Kalau user cuma ngetik kata pendek kayak "IT"
+    if not query_words:
+        query_words = query.lower().split()
+
+    scored = []
+    
+    # SCORING (TF & Exact Match)
     for paragraph in text_list:
-        if any(word in paragraph.lower() for word in query_words if len(word) > 1): 
-            relevant_paragraphs.append(paragraph)
-            
-    return "\n".join(relevant_paragraphs[:limit])
+        # Bersihkan paragraf dari tanda baca sebelum dihitung (Sapu Ajaib)
+        clean_paragraph = re.sub(r'[^\w\s]', '', paragraph.lower())
+        
+        # c. scoring (Hitung frekuensi kemunculan kata secara eksak (Term Frequency))
+        score = sum(clean_paragraph.split().count(word) for word in query_words)
+        # d. Simpan yang relevan
+        if score > 0:
+            # Yang disimpan tetap paragraf asli (paragraph) yang ada tanda bacanya, 
+            # biar AI gampang bacanya, bukan clean_paragraph
+            scored.append((score, paragraph)) 
+
+    # SAFETY NET KALO GAK KETEMU APA-APA
+    if not scored:
+        return "Materi tidak ditemukan dalam modul."
+
+    # RANKING
+    scored.sort(reverse=True) # e. Ranking
+    return "\n".join([p for _, p in scored[:limit]]) # f. Ambil top context
 
 # 4. MAPPING FILE (Tanpa folder 'data/' jika file sejajar dengan app.py) ---
 FILES = {
@@ -103,7 +132,7 @@ if prompt := st.chat_input("Type Here...!"):
     st.session_state.messages.append({"role": "user", "content": prompt})
     st.chat_message("user", avatar="🧑‍🎓").write(prompt)
 
-    # Logika Integrasi Data
+    #8. AUGMENTATION (masukin konteks ke prompt) Logika Integrasi Data
     context_text = get_relevant_context(prompt, course_content)
     
     # SYSTEM PROMPT
@@ -125,6 +154,7 @@ if prompt := st.chat_input("Type Here...!"):
     3. JIKA pertanyaan MELENCENG JAUH (misal: tanya SQL saat mata kuliah Algoritma, atau tanya Resep Masakan), JANGAN DIJAWAB. Katakan: "Maaf, topik ini bukan bagian dari mata kuliah {selected_subject}."
     4. JANGAN PERNAH MENJAWAB "Maaf informasi tidak ditemukan" jika topiknya masih nyambung.
     5. Langsung jelaskan definisinya dengan percaya diri.
+    6. Jika konteks tidak cukup, jelaskan dengan jelas bahwa informasi terbatas.
     """
 
     client = OpenAI(api_key=openai_api_key)
@@ -133,6 +163,7 @@ if prompt := st.chat_input("Type Here...!"):
         final_messages = [{"role": "system", "content": system_prompt}] + st.session_state.messages
         
         with st.spinner("Sedang membaca modul & menyusun jawaban..."):
+            #9. GENERATION LLM Jawab
             response = client.chat.completions.create(
                 model="gpt-4o-mini", # Pastikan model ini tersedia di akun (atau gpt-3.5-turbo)
                 messages=final_messages

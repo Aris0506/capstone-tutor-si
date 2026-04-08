@@ -2,7 +2,7 @@ import streamlit as st
 from openai import OpenAI
 import os
 from docx import Document
-
+import re
 
 
 # 1. KONFIGURASI HALAMAN 
@@ -13,28 +13,57 @@ st.title("🎓 Tutor Virtual Mahasiswa UT")
 st.caption("Asisten Belajar Mandiri Mahasiswa Program Studi Sistem Informasi")
 
 
-# 3. FUNGSI LOAD DATA 
-@st.cache_data  # open file, then save to temporary memories
-def load_docx_text(file_path): # Open file Word & ekstrak teksnya
+
+# 2. FUNGSI LOAD DATA 
+@st.cache_data
+def load_docx_text(file_path):
     try:
         doc = Document(file_path)
         full_text = []
+        
         for para in doc.paragraphs:
-            if len(para.text.strip()) > 0: # If PARAGRAPH/BARIS empty, just lewati (skip)
-                full_text.append(para.text)
+            text = para.text.strip()
+            if text:
+                full_text.append(text)
+                
         return full_text
-    except Exception as e:
-        return [] # SAFETY NET: Kalau file Word-nya error atau hilang, jangan crash, balikin kosong aja
-
-def get_relevant_context(query, text_list, limit=40): # SEARCH KEY WORD dari pertanyaan mahasiswa
-    query_words = query.lower().split() # Pecah kalimat pertanyaan mahasiswa jadi kata per kata (huruf kecil)
-    relevant_paragraphs = []
     
+    except Exception as e:
+        # Menampilkan error di layar web pakai Streamlit
+        st.error(f"Gagal memuat modul: {e}") 
+        return []
+
+# 3. RAG - Retrieval (ambil konteks dari dokumen)
+def get_relevant_context(query, text_list, limit=5):
+    # a.PREPROCESSING QUERY (Filter kata receh)
+    query_words = [word for word in query.lower().split() if len(word) > 2]
+    
+    # b. Safety Net: Kalau user cuma ngetik kata pendek kayak "IT"
+    if not query_words:
+        query_words = query.lower().split()
+
+    scored = []
+    
+    # SCORING (TF & Exact Match)
     for paragraph in text_list:
-        if any(word in paragraph.lower() for word in query_words if len(word) > 1): # Cek apakah ada kata kunci di paragraf ini
-            relevant_paragraphs.append(paragraph)
-            
-    return "\n".join(relevant_paragraphs[:limit]) # Gabungkan paragrafnya, tapi BATASI maksimal 40 biar gak boros token API
+        # Bersihkan paragraf dari tanda baca sebelum dihitung (Sapu Ajaib)
+        clean_paragraph = re.sub(r'[^\w\s]', '', paragraph.lower())
+        
+        # c. scoring (Hitung frekuensi kemunculan kata secara eksak (Term Frequency))
+        score = sum(clean_paragraph.split().count(word) for word in query_words)
+        # d. Simpan yang relevan
+        if score > 0:
+            # Yang disimpan tetap paragraf asli (paragraph) yang ada tanda bacanya, 
+            # biar AI gampang bacanya, bukan clean_paragraph
+            scored.append((score, paragraph)) 
+
+    # SAFETY NET KALO GAK KETEMU APA-APA
+    if not scored:
+        return "Materi tidak ditemukan dalam modul."
+
+    # RANKING
+    scored.sort(reverse=True) # e. Ranking
+    return "\n".join([p for _, p in scored[:limit]]) # f. Ambil top context
 
 # 4. MAPPING FILE (Katalog Lemari Arsip)
 # Ini adalah tipe data Dictionary (Kamus).
