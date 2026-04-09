@@ -46,7 +46,7 @@ def get_relevant_context(query, text_list, limit=5):
     
     # SCORING (TF & Exact Match)
     for paragraph in text_list:
-        # Bersihkan paragraf dari tanda baca sebelum dihitung (Sapu Ajaib)
+        # Bersihkan paragraf dari tanda baca sebelum dihitung
         clean_paragraph = re.sub(r'[^\w\s]', '', paragraph.lower())
         
         # c. scoring (Hitung frekuensi kemunculan kata secara eksak (Term Frequency))
@@ -100,9 +100,9 @@ with st.sidebar:
     file_path = FILES[selected_subject]
     if os.path.exists(file_path):
         course_content = load_docx_text(file_path)
-        st.success(f"✅ Modul {selected_subject} dimuat!")
+        st.success(f"Modul {selected_subject} dimuat!")
     else:
-        st.error(f"❌ File tidak ditemukan: {file_path}")
+        st.error(f"File tidak ditemukan: {file_path}")
         course_content = []
 
     st.divider()
