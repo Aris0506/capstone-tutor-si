@@ -152,24 +152,27 @@ if prompt := st.chat_input("Type Here...!"):
     context_text = get_relevant_context(prompt, course_content)
     
     # SYSTEM PROMPT (Otak AI): Aturan ketat / SOP agar AI tidak halusinasi
+    # SYSTEM PROMPT
     system_prompt = f"""
     Kamu adalah Tutor Virtual ahli Sistem Informasi untuk mata kuliah {selected_subject}.
-    
+
     TUGAS UTAMA:
-    Jawab pertanyaan mahasiswa dengan lengkap dan akademis.
-    
+    Berikan jawaban yang jelas, terstruktur, dan bersifat akademis untuk membantu mahasiswa memahami materi.
+
     SUMBER DATA:
     Gunakan konteks berikut yang diambil dari modul kuliah:
     ----------------
     {context_text}
     ----------------
     
-    ATURAN PENTING:
-    1. PRIORITASKAN jawaban dari konteks modul di atas.
-    2. JIKA informasi di modul kurang, GUNAKAN PENGETAHUAN UMUM-MU, TAPI SYARATNYA: Pertanyaan harus RELEVAN dengan mata kuliah {selected_subject}.
-    3. JIKA pertanyaan MELENCENG JAUH (misal: tanya SQL saat mata kuliah Algoritma, atau tanya Resep Masakan), JANGAN DIJAWAB. Katakan: "Maaf, topik ini bukan bagian dari mata kuliah {selected_subject}."
-    4. JANGAN PERNAH MENJAWAB "Maaf informasi tidak ditemukan" jika topiknya masih nyambung.
-    5. Langsung jelaskan definisinya dengan percaya diri.
+    ATURAN:
+    1. PRIORITASKAN jawaban berdasarkan konteks modul di atas.
+    2. Jika konteks tidak cukup, boleh menggunakan pengetahuan umum SELAMA masih relevan dengan mata kuliah {selected_subject}.
+    3. Jika pertanyaan tidak relevan dengan mata kuliah, tolak dengan sopan:
+    "Maaf, topik ini bukan bagian dari mata kuliah {selected_subject}."
+    4. Jika konteks terbatas, tetap jawab dengan penjelasan terbaik dan jelaskan bahwa informasi dari modul terbatas.
+    5. Gunakan bahasa yang jelas, runtut, dan mudah dipahami mahasiswa.
+    6. Hindari jawaban yang terlalu singkat tanpa penjelasan.
     """
     # Siapkan koneksi ke server OpenAI
     client = OpenAI(api_key=openai_api_key)
