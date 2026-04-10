@@ -16,11 +16,13 @@ RAG adalah metode yang menggabungkan proses pencarian informasi (retrieval) dari
 
 Karena model bahasa murni berpotensi menghasilkan jawaban yang tidak akurat atau di luar konteks. Dengan RAG, sistem mengambil referensi langsung dari materi kuliah, sehingga jawaban lebih terkontrol dan sesuai kebutuhan akademik.
 
+
 # 3. ❓ “Retrieval kamu pakai apa?”
 
 Saat ini masih menggunakan pendekatan berbasis kata kunci (keyword-based) dengan perhitungan skor sederhana. Namun ke depan bisa dikembangkan menggunakan vector embedding dan semantic search untuk meningkatkan akurasi.
 
-💥 ini jawaban aman + keliatan ngerti roadmap
+"Karena sistem masih dalam tahap MVP, sehingga digunakan metode sederhana yang efisien, namun sudah cukup untuk mengambil konteks relevan."
+💥jawaban aman + keliatan ngerti roadmap
 
 # 4. ❓ “Kenapa pakai Streamlit?”
 
@@ -30,4 +32,4 @@ Karena Streamlit memungkinkan pengembangan aplikasi web secara cepat dan langsun
 
 Keterbatasan utama saat ini adalah metode retrieval yang masih sederhana dan ketergantungan pada kualitas dokumen. Selain itu, sistem masih stateless dan belum menyimpan riwayat percakapan secara permanen.
 
-💥 ini penting banget—jangan bilang “tidak ada kelemahan” ❌
+💥 banget—jangan bilang “tidak ada kelemahan” ❌
