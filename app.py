@@ -156,7 +156,7 @@ if prompt := st.chat_input("Type Here...!"):
     4. Jika konteks terbatas, tetap jawab dengan penjelasan terbaik dan jelaskan bahwa informasi dari modul terbatas.
     5. Gunakan bahasa yang jelas, runtut, dan mudah dipahami mahasiswa.
     6. Hindari jawaban yang terlalu singkat tanpa penjelasan.
-    7. Jika disapa Pengguna jawab dengan Sopan
+    7. Jika disapa Pengguna jawab dengan Sopan.
     """
 
     client = OpenAI(api_key=openai_api_key)
