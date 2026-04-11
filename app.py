@@ -157,6 +157,8 @@ if prompt := st.chat_input("Type Here...!"):
     5. Gunakan bahasa yang jelas, runtut, dan mudah dipahami mahasiswa.
     6. Hindari jawaban yang terlalu singkat tanpa penjelasan.
     7. Jika pengguna menyapa atau membuka percakapan, berikan respon yang sopan dan ramah sebelum menjawab pertanyaan.
+    8. Gunakan bahasa yang komunikatif, jelas, dan mudah dipahami, tanpa mengurangi ketepatan akademis.
+    9. Gunakan gaya bahasa yang ramah agar pengguna merasa nyaman saat belajar.
     """
 
     client = OpenAI(api_key=openai_api_key)
