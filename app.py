@@ -3,7 +3,7 @@ from openai import OpenAI
 import os
 from docx import Document
 import re
-
+import time
 
 
 # 1. KONFIGURASI HALAMAN 
@@ -59,7 +59,7 @@ def get_relevant_context(query, text_list, limit=5):
 
     # SAFETY NET KALO GAK KETEMU APA-APA
     if not scored:
-        return "Materi tidak ditemukan dalam modul."
+        return " "
 
     # RANKING
     scored.sort(reverse=True) # e. Ranking
@@ -73,7 +73,7 @@ FILES = {
     "Sistem Informasi Manajemen": "data/Sistem Informasi Manajemen (Pengantar SI)_LENGKAP_CLEANED.docx"
 }
 
-#  5. SIDEBAR 
+##  5. SIDEBAR 
 with st.sidebar:
     st.header("⚙️ Konfigurasi")
     openai_api_key = st.text_input("OpenAI API Key", type="password")
@@ -108,13 +108,16 @@ with st.sidebar:
     st.divider()
     # Tombol Hapus Riwayat ada di Sidebar agar tidak mengganggu chat
     if st.button("Hapus Riwayat Chat 🗑️"):
-        st.session_state.messages = []
+        st.session_state.messages = [{
+            "role": "assistant",
+            "content": "Riwayat chat dihapus. Silakan mulai pertanyaan baru ya!"
+        }]
         st.rerun()
 
     st.divider()
     st.info("Dibuat oleh Kelompok [Nomor] - Capstone Project 2026")
 
-# 6. CHAT INTERFACE
+## 6. CHAT INTERFACE
 if "messages" not in st.session_state:
     st.session_state["messages"] = [{"role": "assistant", "content": "Halo! Silakan pilih mata kuliah di sidebar kiri, lalu tanyakan materinya."}]
 
@@ -132,56 +135,77 @@ if prompt := st.chat_input("Type Here...!"):
     st.session_state.messages.append({"role": "user", "content": prompt})
     st.chat_message("user", avatar="🧑‍🎓").write(prompt)
 
-    #8. AUGMENTATION (masukin konteks ke prompt) Logika Integrasi Data
-    context_text = get_relevant_context(prompt, course_content)
-    
-    # SYSTEM PROMPT
-    system_prompt = f"""
-    Kamu adalah Tutor Virtual ahli Sistem Informasi untuk mata kuliah {selected_subject}.
+    if not course_content:
+        st.warning("Modul belum tersedia.")
+        st.stop()
 
-    TUGAS UTAMA:
-    Berikan jawaban yang jelas, terstruktur, dan bersifat akademis untuk membantu mahasiswa memahami materi.
-
-    SUMBER DATA:
-    Gunakan konteks berikut yang diambil dari modul kuliah:
-    ----------------
-    {context_text}
-    ----------------
-    
-    ATURAN:
-    1. PRIORITASKAN jawaban berdasarkan konteks modul di atas.
-    2. Jika konteks tidak cukup, boleh menggunakan pengetahuan umum SELAMA masih relevan dengan mata kuliah {selected_subject}.
-    3. Jika pertanyaan tidak relevan dengan mata kuliah, tolak dengan sopan:
-    "Maaf, topik ini bukan bagian dari mata kuliah {selected_subject}."
-    4. Jika konteks terbatas, tetap jawab dengan penjelasan terbaik dan jelaskan bahwa informasi dari modul terbatas.
-    5. Gunakan bahasa yang jelas, runtut, dan mudah dipahami mahasiswa.
-    6. Hindari jawaban yang terlalu singkat tanpa penjelasan.
-    7. Jika pengguna menyapa atau membuka percakapan, berikan respon yang sopan dan ramah sebelum menjawab pertanyaan.
-    8. Gunakan bahasa yang komunikatif, jelas, dan mudah dipahami, tanpa mengurangi ketepatan akademis.
-    9. Gunakan gaya bahasa yang ramah agar pengguna merasa nyaman saat belajar.
-    """
-
-    client = OpenAI(api_key=openai_api_key)
-    
-    try:
-        final_messages = [{"role": "system", "content": system_prompt}] + st.session_state.messages
+    with st.status("Memproses pertanyaan Anda...", expanded=True) as status:
+        st.write("Membaca ribuan kata dalam modul...")
+        time.sleep(1) # Delay 
+        #8. AUGMENTATION (masukin konteks ke prompt) Logika Integrasi Data
+        context_text = get_relevant_context(prompt, course_content)
         
-        with st.spinner("Sedang membaca modul & menyusun jawaban..."):
-            #9. GENERATION LLM Jawab
+        st.write("Menyatukan konteks dan System Prompt...")
+        time.sleep(1) 
+        
+        # SYSTEM PROMPT
+        system_prompt = f"""
+        Kamu adalah Tutor Virtual ahli Sistem Informasi untuk mata kuliah {selected_subject}.
+
+        TUGAS UTAMA:
+        Berikan jawaban yang jelas, terstruktur, dan bersifat akademis untuk membantu mahasiswa memahami materi.
+
+        SUMBER DATA:
+        Gunakan konteks berikut yang diambil dari modul kuliah:
+        ----------------
+        {context_text}
+        ----------------
+        
+        ATURAN:
+        1. PRIORITASKAN jawaban berdasarkan konteks modul di atas.
+        2. Jika konteks tidak cukup, boleh menggunakan pengetahuan umum SELAMA masih relevan dengan mata kuliah {selected_subject}.
+        3. Jika pertanyaan tidak relevan dengan mata kuliah, tolak dengan sopan:
+        "Maaf, topik ini bukan bagian dari mata kuliah {selected_subject}."
+        4. Jika konteks terbatas, tetap jawab dengan penjelasan terbaik dan jelaskan bahwa informasi dari modul terbatas.
+        5. Gunakan bahasa yang jelas, runtut, dan mudah dipahami mahasiswa.
+        6. Hindari jawaban yang terlalu singkat tanpa penjelasan.
+        7. Jika pengguna menyapa atau membuka percakapan, berikan respon yang sopan dan ramah sebelum menjawab pertanyaan.
+        8. Gunakan bahasa yang komunikatif, jelas, dan mudah dipahami, tanpa mengurangi ketepatan akademis.
+        9. Gunakan gaya bahasa yang ramah agar pengguna merasa nyaman saat belajar.
+        """
+        
+        st.write("Mengirim ke otak LLM untuk dijawab...")
+
+        
+        
+        client = OpenAI(api_key=openai_api_key)
+    
+    
+        try:
+            MAX_HISTORY = 8
+            recent_messages = st.session_state.messages[-MAX_HISTORY:]
+            final_messages = [{"role": "system", "content": system_prompt}] + recent_messages
+            
+            # 9. GENERATION LLM Jawab
             response = client.chat.completions.create(
-                model="gpt-4o-mini", # Pastikan model ini tersedia di akun (atau gpt-3.5-turbo)
+                model="gpt-4o-mini", 
                 messages=final_messages
             )
             msg = response.choices[0].message.content
             
-        # Tampilkan output asisten
-        st.session_state.messages.append({"role": "assistant", "content": msg})
-        st.chat_message("assistant", avatar="🤖").write(msg)
-        
-        # Tampilkan Sumber Referensi (Opsional di dalam expander)
-        if context_text:
-            with st.expander("🔍 Lihat Sumber Referensi Modul"):
-                st.info(context_text)
-        
-    except Exception as e:
-        st.error(f"Error: {e}")
+            # Tutup status bar dengan sukses
+            status.update(label="Selesai! Menampilkan jawaban...", state="complete", expanded=False)
+            
+        except Exception as e:
+            status.update(label="Terjadi Kesalahan", state="error", expanded=False)
+            st.error(f"Error: {e}")
+            st.stop()
+
+    # Tampilkan output asisten setelah loading selesai
+    st.session_state.messages.append({"role": "assistant", "content": msg})
+    st.chat_message("assistant", avatar="🤖").write(msg)
+    
+    # Tampilkan Sumber Referensi
+    if context_text:
+        with st.expander("Lihat Sumber Referensi Modul"):
+            st.info(context_text)
