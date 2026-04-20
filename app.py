@@ -36,9 +36,14 @@ def load_docx_text(file_path):
 # 3. RAG - Retrieval (ambil konteks dari dokumen)
 def get_relevant_context(query, text_list, limit=5):
     # a. PREPROCESSING QUERY (Filter kata receh & Stopwords)
-    # Daftar kata sambung yang haram untuk dihitung skornya
-    stopwords = {"yang", "di", "ke", "dari", "ini", "itu", "dan", "atau", "apakah", "apa", "bagaimana", 
-                 "untuk", "dengan", "dalam", "pada", "adalah", "sebagai", "bahwa", "tersebut", "bisa", "akan", "jadi"}
+    # Daftar kata sambung yang tidak diperlukan dan tidak untuk dihitung skornya
+    stopwords = {
+        "yang", "di", "ke", "dari", "ini", "itu", "dan", "atau", "apakah", 
+        "apa", "bagaimana", "untuk", "dengan", "dalam", "pada", "adalah", 
+        "sebagai", "bahwa", "tersebut", "bisa", "akan", "jadi",
+        "saya", "aku", "kami", "kita", "kamu", "anda", # Kata Ganti
+        "ingin", "mau", "tanya", "tahu", "jelaskan", "dong", "tolong" # Basa-basi/Perintah
+    }
     
     # Pecah kata, pastikan hurufnya lebih dari 2, dan BUKAN termasuk kata buangan (stopwords)
     query_words = [word for word in query.lower().split() if len(word) > 2 and word not in stopwords]
