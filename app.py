@@ -78,7 +78,6 @@ def get_relevant_context(query, text_list, limit=5):
 
 # 4. MAPPING FILE (Tanpa folder 'data/' jika file sejajar dengan app.py) ---
 FILES = {
-    "Algoritma & Pemrograman": "data/Algoritma Dan Pemrograman_LENGKAP_CLEANED.docx",
     "Basis Data": "data/Basis Data_LENGKAP_CLEANED.docx",
     "Analisis Perancangan Sistem": "data/MSIM4302 - Analisis Dan Perancangan Sistem_LENGKAP_CLEANED.docx",
     "Sistem Informasi Manajemen": "data/Sistem Informasi Manajemen (Pengantar SI)_LENGKAP_CLEANED.docx"
