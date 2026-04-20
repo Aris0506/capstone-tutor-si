@@ -128,7 +128,12 @@ with st.sidebar:
     st.divider()
     st.info("Dibuat oleh Kelompok [B] - Capstone Project 2026")
     st.divider()
-    st.warning("""**Pemberitahuan Akademis:** Aplikasi ini dikembangkan secara mandiri sebagai purwarupa (prototype) riset Tugas Akhir. Seluruh data referensi hak ciptanya dimiliki oleh Universitas Terbuka. Sistem ini bersifat non-komersial, murni untuk keperluan simulasi teknologi, dan tidak mewakili layanan resmi dari pihak universitas.""")
+    st.markdown("""
+    <div style="text-align: justify; padding: 15px; border-radius: 8px; background-color: #fff3cd; color: #856404; border-left: 5px solid #ffeeba; font-size: 14px;">
+        <strong>Disclaimer Capstone Project:</strong><br><br>
+        Aplikasi ini dikembangkan secara mandiri sebagai purwarupa <i>(prototype)</i> untuk keperluan Capstone Project. Seluruh data referensi dan hak cipta materi sepenuhnya dimiliki oleh Universitas Terbuka. Sistem ini bersifat non-komersial, murni untuk simulasi implementasi teknologi AI, dan tidak mewakili layanan resmi dari pihak institusi.
+    </div>
+    """, unsafe_allow_html=True)
 ## 6. CHAT INTERFACE
 if "messages" not in st.session_state:
     st.session_state["messages"] = [{"role": "assistant", "content": "Halo! Silakan pilih mata kuliah di sidebar kiri, lalu tanyakan materinya."}]
