@@ -128,8 +128,7 @@ with st.sidebar:
     st.divider()
     st.info("Dibuat oleh Kelompok [B] - Capstone Project 2026")
     st.divider()
-    st.info("Disclaimer:Seluruh konten materi berasal dari Modul Resmi Universitas Terbuka.Aplikasi ini merupakan purwarupa akademis untuk tugas akhir dan tidak berafiliasi secara resmi dengan pihak universitas.")
-
+    st.warning("""**⚠️ Pemberitahuan Akademis:** Aplikasi ini dikembangkan secara mandiri sebagai purwarupa (prototype) riset Tugas Akhir. Seluruh data referensi hak ciptanya dimiliki oleh Universitas Terbuka. Sistem ini bersifat non-komersial, murni untuk keperluan simulasi teknologi, dan tidak mewakili layanan resmi dari pihak universitas.""")
 ## 6. CHAT INTERFACE
 if "messages" not in st.session_state:
     st.session_state["messages"] = [{"role": "assistant", "content": "Halo! Silakan pilih mata kuliah di sidebar kiri, lalu tanyakan materinya."}]
