@@ -8,6 +8,10 @@ import time
 
 # 1. KONFIGURASI HALAMAN 
 st.set_page_config(page_title="Tutor Virtual SI - UT", page_icon="🎓")
+# Tambahin ini di file Streamlit lu
+with st.sidebar:
+    st.info("⚠️ **Disclaimer:**\n\nSeluruh konten materi berasal dari Modul Resmi Universitas Terbuka." \
+    "Aplikasi ini merupakan purwarupa akademis untuk tugas akhir dan tidak berafiliasi secara resmi dengan pihak universitas.")
 
 # # # --- JUDUL ---
 st.title("🎓 Tutor Virtual Mahasiswa UT")
