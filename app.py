@@ -124,7 +124,9 @@ with st.sidebar:
         st.rerun()
 
     st.divider()
-    st.info("Dibuat oleh Kelompok [Nomor] - Capstone Project 2026")
+    st.info("Dibuat oleh Kelompok [B] - Capstone Project 2026")
+    st.divider()
+    st.markdown("""*Disclaimer: Seluruh konten materi berasal dari Modul Resmi Universitas Terbuka. Aplikasi ini merupakan purwarupa akademis dan tidak berafiliasi secara resmi dengan pihak universitas.*""")
 
 ## 6. CHAT INTERFACE
 if "messages" not in st.session_state:
