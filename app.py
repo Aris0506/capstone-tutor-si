@@ -35,8 +35,13 @@ def load_docx_text(file_path):
 
 # 3. RAG - Retrieval (ambil konteks dari dokumen)
 def get_relevant_context(query, text_list, limit=5):
-    # a.PREPROCESSING QUERY (Filter kata receh)
-    query_words = [word for word in query.lower().split() if len(word) > 2]
+    # a. PREPROCESSING QUERY (Filter kata receh & Stopwords)
+    # Daftar kata sambung yang haram untuk dihitung skornya
+    stopwords = {"yang", "di", "ke", "dari", "ini", "itu", "dan", "atau", "apakah", "apa", "bagaimana", 
+                 "untuk", "dengan", "dalam", "pada", "adalah", "sebagai", "bahwa", "tersebut", "bisa", "akan", "jadi"}
+    
+    # Pecah kata, pastikan hurufnya lebih dari 2, dan BUKAN termasuk kata buangan (stopwords)
+    query_words = [word for word in query.lower().split() if len(word) > 2 and word not in stopwords]
     
     # b. Safety Net: Kalau user cuma ngetik kata pendek kayak "IT"
     if not query_words:
@@ -51,10 +56,9 @@ def get_relevant_context(query, text_list, limit=5):
         
         # c. scoring (Hitung frekuensi kemunculan kata secara eksak (Term Frequency))
         score = sum(clean_paragraph.split().count(word) for word in query_words)
+        
         # d. Simpan yang relevan
         if score > 0:
-            # Yang disimpan tetap paragraf asli (paragraph) yang ada tanda bacanya, 
-            # biar AI gampang bacanya, bukan clean_paragraph
             scored.append((score, paragraph)) 
 
     # SAFETY NET KALO GAK KETEMU APA-APA
